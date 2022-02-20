@@ -1,27 +1,35 @@
-import auth, { AuthParams } from '@/utils/authentication';
-import { useEffect, useMemo, useState } from 'react';
+import React from 'react';
+import lazyload from '@/utils/lazyload';
 
-export type Route = AuthParams & {
+export type Route = {
   name: string;
   key: string;
-  breadcrumb?: boolean;
+  components?: JSX.Element;
   children?: Route[];
 };
 
 export const routes: Route[] = [
   {
-    name: 'menu.dashboard',
-    key: 'dashboard',
+    name: '多人协作编辑',
+    key: 'multiplayer-edit',
     children: [
       {
-        name: 'menu.dashboard.workplace',
-        key: 'dashboard/workplace',
+        name: '版本提示',
+        key: 'multiplayer-edit/version-tip',
+      },
+      {
+        name: '编辑锁',
+        key: 'multiplayer-edit/edit-lock',
+      },
+      {
+        name: '版本diff',
+        key: 'multiplayer-edit/version-diff',
+      },
+      {
+        name: '协同编辑',
+        key: 'multiplayer-edit/collaborative-edit',
       },
     ],
-  },
-  {
-    name: 'Example',
-    key: 'example',
   },
 ];
 
@@ -36,65 +44,18 @@ export const getName = (path: string, routes) => {
   });
 };
 
-export const generatePermission = (role: string) => {
-  const actions = role === 'admin' ? ['*'] : ['read'];
-  const result = {};
-  routes.forEach((item) => {
-    if (item.children) {
-      item.children.forEach((child) => {
-        result[child.name] = actions;
-      });
-    }
-  });
-  return result;
-};
-
-const useRoute = (userPermission): [Route[], string] => {
-  const filterRoute = (routes: Route[], arr = []): Route[] => {
-    if (!routes.length) {
-      return [];
-    }
-    for (const route of routes) {
-      const { requiredPermissions, oneOfPerm } = route;
-      let visible = true;
-      if (requiredPermissions) {
-        visible = auth({ requiredPermissions, oneOfPerm }, userPermission);
+export function getFlattenRoutes(routes) {
+  const res = [];
+  function travel(_routes) {
+    _routes.forEach((route) => {
+      if (route.key && !route.children) {
+        route.component = lazyload(() => import(`@/scenes/${route.key}`));
+        res.push(route);
+      } else if (Array.isArray(route.children) && route.children.length) {
+        travel(route.children);
       }
-
-      if (!visible) {
-        continue;
-      }
-      if (route.children && route.children.length) {
-        const newRoute = { ...route, children: [] };
-        filterRoute(route.children, newRoute.children);
-        if (newRoute.children.length) {
-          arr.push(newRoute);
-        }
-      } else {
-        arr.push({ ...route });
-      }
-    }
-
-    return arr;
-  };
-
-  const [permissionRoute, setPermissionRoute] = useState(routes);
-
-  useEffect(() => {
-    const newRoutes = filterRoute(routes);
-    setPermissionRoute(newRoutes);
-  }, [userPermission]);
-
-  const defaultRoute = useMemo(() => {
-    const first = permissionRoute[0];
-    if (first) {
-      const firstRoute = first?.children?.[0]?.key || first.key;
-      return firstRoute;
-    }
-    return '';
-  }, [permissionRoute]);
-
-  return [permissionRoute, defaultRoute];
-};
-
-export default useRoute;
+    });
+  }
+  travel(routes);
+  return res;
+}
