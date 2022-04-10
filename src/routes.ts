@@ -10,27 +10,37 @@ export type Route = {
 
 export const routes: Route[] = [
   {
-    name: '多人协作编辑',
-    key: 'multiplayer-edit',
+    name: 'react18 新特性',
+    key: 'react18',
     children: [
       {
-        name: '版本提示',
-        key: 'multiplayer-edit/version-tip',
-      },
-      {
-        name: '编辑锁',
-        key: 'multiplayer-edit/edit-lock',
-      },
-      {
-        name: '版本diff',
-        key: 'multiplayer-edit/version-diff',
-      },
-      {
-        name: '协同编辑',
-        key: 'multiplayer-edit/collaborative-edit',
+        name: '批量更新',
+        key: 'react18/automatic-batching',
       },
     ],
   },
+  // {
+  //   name: '多人协作编辑',
+  //   key: 'multiplayer-edit',
+  //   children: [
+  //     {
+  //       name: '版本提示',
+  //       key: 'multiplayer-edit/version-tip',
+  //     },
+  //     {
+  //       name: '编辑锁',
+  //       key: 'multiplayer-edit/edit-lock',
+  //     },
+  //     {
+  //       name: '版本diff',
+  //       key: 'multiplayer-edit/version-diff',
+  //     },
+  //     {
+  //       name: '协同编辑',
+  //       key: 'multiplayer-edit/collaborative-edit',
+  //     },
+  //   ],
+  // },
 ];
 
 export const getName = (path: string, routes) => {
